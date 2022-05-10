@@ -1,20 +1,4 @@
-/**
- *Submitted for verification at BscScan.com on 2022-04-11
-*/
-
-/**
- *Submitted for verification at BscScan.com on 2022-04-05
-*/
-
-/**
- *Submitted for verification at BscScan.com on 2022-01-14
-*/
-
-/**
- *Submitted for verification at BscScan.com on 2022-01-14
-*/
-
-pragma solidity ^0.5.0 || ^0.6.0;
+pragma solidity 0.5.8;
 pragma experimental ABIEncoderV2;
 
 contract Governance {
@@ -32,7 +16,7 @@ contract Governance {
         _;
     }
 
-    function setGovernance(address governance)  public  onlyGovernance
+    function setGovernance(address governance)  external  onlyGovernance
     {
         require(governance != address(0), "new governance the zero address");
         emit GovernanceTransferred(_governance, governance);
@@ -309,7 +293,7 @@ contract Ownable is Context {
      * NOTE: Renouncing ownership will leave the contract without an owner,
      * thereby removing any functionality that is only available to the owner.
      */
-    function renounceOwnership() public onlyOwner {
+    function renounceOwnership() external onlyOwner {
         emit OwnershipTransferred(_owner, address(0));
         _owner = address(0);
     }
@@ -318,7 +302,7 @@ contract Ownable is Context {
      * @dev Transfers ownership of the contract to a new account (`newOwner`).
      * Can only be called by the current owner.
      */
-    function transferOwnership(address newOwner) public onlyOwner {
+    function transferOwnership(address newOwner) external onlyOwner {
         _transferOwnership(newOwner);
     }
 
@@ -607,27 +591,36 @@ contract Consignment is Governance {
     
     mapping(address => mapping(uint256 => uint256)) public _nftTokenInfo;
     mapping(address => mapping(uint256 => uint256)) public _nftTimeInfo;
-    mapping(address => mapping(uint256 => uint256)) public _nftTypeInfo;
-    mapping(address => mapping(uint256 => string)) public _nftNameInfo;
-    mapping(address => mapping(uint256 => string)) public _nftURLInfo;
-    mapping(address => mapping(uint256 => string)) public _nftBrandInfo;
-    mapping(address => mapping(uint256 => uint256)) public _nftNumberingInfo;
+    // mapping(address => mapping(uint256 => uint256)) public _nftTypeInfo;
+    // mapping(address => mapping(uint256 => string)) public _nftNameInfo;
+    // mapping(address => mapping(uint256 => string)) public _nftURLInfo;
+    // mapping(address => mapping(uint256 => string)) public _nftBrandInfo;
+    // mapping(address => mapping(uint256 => uint256)) public _nftNumberingInfo;
     mapping(address => mapping(uint256 => address)) public _nftSellerInfo;
     
-    address public usdtToken = 0x55d398326f99059fF775485246999027B3197955;      //todo
+    address public constant usdtToken = 0x55d398326f99059fF775485246999027B3197955;      //todo
     address public nftAddr;      //todo
     
     uint public _fee = 1000;
-    uint public _base = 10000;
+    uint public constant _base = 10000;
     uint public itemNum = 0;
 
+    event SetFee(
+        uint256 indexed _newFee
+    );
+
+    event Withdraw(
+        uint256 indexed _withdrawnum
+    );
+
      constructor(address _nftaddr) public {
+         require(_nftaddr != address(0),"err");
         nftAddr = _nftaddr;
     }
     
     function sell(uint _tokenid,uint _price) external {
-        require(_nftSellerInfo[nftAddr][_tokenid] == address(0));
-        require(ERC721(nftAddr).ownerOf(_tokenid) == msg.sender);
+        require(_nftSellerInfo[nftAddr][_tokenid] == address(0),"addr err");
+        require(ERC721(nftAddr).ownerOf(_tokenid) == msg.sender,"ownerOf err");
         require(_nftTokenInfo[nftAddr][_tokenid] <= 0, "cancelSell");
         
         
@@ -701,12 +694,16 @@ contract Consignment is Governance {
     }
     
 
-    function setFee(uint256 _feenum) public onlyGovernance{
+    function setFee(uint256 _feenum) external onlyGovernance{
+        require(_feenum<=10000,"err");
         _fee = _feenum; 
+        emit SetFee(_feenum);
     }
     
-    function withdraw(uint256 num) public onlyGovernance{
+    function withdraw(uint256 num) external onlyGovernance{
         IERC20(usdtToken).safeTransfer(msg.sender,num);
+
+        emit Withdraw(num);
     }
     
     // function getAllItems() public view returns(address[] memory _addr,uint256[] memory _id,uint256[] memory _price,uint256[] memory _typeinfo,uint256[] memory _timeinfo,string[] memory _nameinfo, string[] memory _urlinfo){
@@ -733,7 +730,7 @@ contract Consignment is Governance {
         
     // }
     
-    function getItems(uint count) public view returns(uint256 _id,uint256 _price,uint256 _timeinfo){
+    function getItems(uint count) external view returns(uint256 _id,uint256 _price,uint256 _timeinfo){
         address nAddr = _itemInfos[count].nftTokenAddr;
         uint nID = _itemInfos[count].nftTokenID;
         _id = _itemInfos[count].nftTokenID;
@@ -753,7 +750,4 @@ contract Consignment is Governance {
         return 0x150b7a02;
     }
 
-    function setNFTAddr(address newnftaddr) public onlyGovernance{
-        nftAddr = newnftaddr;
-    }
 }
