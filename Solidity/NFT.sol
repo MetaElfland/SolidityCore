@@ -1,8 +1,4 @@
-/**
- *Submitted for verification at BscScan.com on 2021-09-28
-*/
-
-pragma solidity ^0.5.8;
+pragma solidity 0.5.8;
 
 
 library Address {
@@ -376,6 +372,14 @@ contract Ownable
     address indexed newOwner
   );
 
+  event AddManager(
+    address indexed newManager
+  );
+
+  event DelManager(
+    address indexed delManager
+  );
+
 
   constructor()
     public
@@ -394,17 +398,19 @@ contract Ownable
     _;
   }
 
-  function addManager(address _maddr) public onlyOwner{
+  function addManager(address _maddr) external onlyOwner{
       Manager[_maddr] = true;
+      emit AddManager(_maddr);
   }
   
-  function delManager(address _maddr) public onlyOwner{
+  function delManager(address _maddr) external onlyOwner{
       Manager[_maddr] = false;
+      emit DelManager(_maddr);
   }
   function transferOwnership(
     address _newOwner
   )
-    public
+    external
     onlyOwner
   {
     require(_newOwner != address(0), CANNOT_TRANSFER_TO_ZERO_ADDRESS);
@@ -513,7 +519,7 @@ contract NFToken is
     //supportedInterfaces[0x80ac58cd] = true; // ERC721
   }
   
-  function viewTokenID() view public returns(uint256 ){
+  function viewTokenID() view external returns(uint256 ){
       return tokenID;
   }
   
@@ -611,7 +617,7 @@ contract NFToken is
   function balanceOf(
     address _owner
   )
-    public
+    external
     //override
     view
     returns (uint256)
@@ -793,89 +799,27 @@ contract Mdate is NFToken {
     mapping(uint256 => uint256) public idToIndex;
     mapping(address => uint256[]) public ownerToIds;
     mapping(uint256 => uint256) public idToOwnerIndex;
-    mapping(uint256 => starall1) public all1;
-    mapping(uint256 => starall2) public all2;
-    mapping(uint256 => starall3) public all3;
-    mapping(uint256 => starall4) public all4;
-    mapping(uint256 => starall5) public all5;
-    mapping(uint256 => starall6) public all6;
+    mapping(uint256 => starall) public all;
     
-    struct starall1{
-      uint param1;
-      uint param2;
-      uint param3;
-      uint param4;
-      uint param5;
-      uint param6;
-      uint param7;
-      uint param8;
-      string _uri;
-    }
-    struct starall2{
-      uint param1;
-      uint param2;
-      uint param3;
-      uint param4;
-      uint param5;
-      uint param6;
-      uint param7;
-      uint param8;
-    }
-    struct starall3{
-      uint param1;
-      uint param2;
-      uint param3;
-      uint param4;
-      uint param5;
-      uint param6;
-      uint param7;
-      uint param8;
-    }
-    struct starall4{
-      uint param1;
-      uint param2;
-      uint param3;
-      uint param4;
-      uint param5;
-      string param6;
-      uint param7;
-      uint param8;
-    }
-    struct starall5{
-      uint param1;
-      string param2;
-      uint param3;
-      string param4;
-      uint param5;
-      uint param6;
-      uint param7;
-      uint param8;
-    }
-    struct starall6{
-      uint param1;
-      uint param2;
-      string param3;
-      uint param4;
-      string param5;
-      uint param6;
-      uint param7;
-      uint param8;
-      uint param9;
+    struct starall{
+      bool male;
+        uint meta;      
+        string  param1;
+        string  param2;
+        string  param3;
+        string  _uri;
     }
     function _setTokenstarall(
         uint256 _tokenId,
-        uint256 param1,
-        uint256 param2,
-        uint256 param3,
-        uint256 param4,
-        uint256 param5,
-        uint256 param6,
-        uint256 param7,
-        uint256 param8,
+        bool male,
+        uint meta,
+        string memory  param1,
+        string memory  param2,
+        string memory  param3,
         string memory _uri
     ) 
     internal  validNFToken(_tokenId)  {
-        all1[_tokenId] =  starall1(param1,param2,param3,param4,param5,param6,param7,param8,_uri);
+        all[_tokenId] =  starall(male,meta,param1,param2,param3,_uri);
     }
     function totalSupply() external view returns (uint256) {
         return tokens.length;
@@ -933,22 +877,20 @@ contract zNFTCONTRACT is Mdate,Ownable{
     }
     function mint(
         address _to,
-        uint256 _tokenId,
-        uint param1,
-        uint param2,
-        uint param3,
-        uint param4,
-        uint param5,
-        uint param6,
-        uint param7,
-        uint param8,
+        // uint256 _tokenId,
+        bool male,
+        uint meta,
+        string calldata  param1,
+        string calldata  param2,
+        string calldata  param3,
         string calldata _uri
     )   
         external
         onlyManager
     {
+        uint _tokenId = tokenID;
         super._mint(_to, _tokenId);
-        super._setTokenstarall(_tokenId,param1,param2,param3,param4,param5,param6,param7,param8,_uri);
+        super._setTokenstarall(_tokenId,male,meta,param1,param2,param3,_uri);
     }
     
     function name() public view returns (string memory) {
@@ -960,105 +902,15 @@ contract zNFTCONTRACT is Mdate,Ownable{
     function burn(uint256 _tokenId) external onlyManager {
         super._burn(_tokenId);
     }
-    function setStarall1(
-      uint256 _tokenId,
-        uint256 param1,
-        uint256 param2,
-        uint256 param3,
-        uint256 param4,
-        uint256 param5,
-        uint256 param6,
-        uint256 param7,
-        uint256 param8,
-        string calldata _uri
-    ) 
-        external
-        onlyManager
-    {
-        all1[_tokenId] =  starall1(param1,param2,param3,param4,param5,param6,param7,param8,_uri);
-    }
-    function setStarall2(
-      uint256 _tokenId,
-      uint param1,
-      uint param2,
-      uint param3,
-      uint param4,
-      uint param5,
-      uint param6,
-      uint param7,
-      uint param8)
-        external
-        onlyManager
-    {
-        all2[_tokenId] =  starall2(param1,param2,param3,param4,param5,param6,param7,param8);
-    }
-    function setStarall3(
-      uint256 _tokenId,
-      uint param1,
-      uint param2,
-      uint param3,
-      uint param4,
-      uint param5,
-      uint param6,
-      uint param7,
-      uint param8)
-        external
-        onlyManager
-    {
-        all3[_tokenId] =  starall3(param1,param2,param3,param4,param5,param6,param7,param8);
-    }
-    function setStarall4(
-      uint256 _tokenId,
-      uint param1,
-      uint param2,
-      uint param3,
-      uint param4,
-      uint param5,
-      string calldata param6,
-      uint param7,
-      uint param8)
-        external
-        onlyManager
-    {
-        all4[_tokenId] =  starall4(param1,param2,param3,param4,param5,param6,param7,param8);
-    }
-    function setStarall5(
-      uint256 _tokenId,
-      uint param1,
-      string calldata param2,
-      uint param3,
-      string calldata param4,
-      uint param5,
-      uint param6,
-      uint param7,
-      uint param8)
-        external
-        onlyManager
-    {
-        all5[_tokenId] =  starall5(param1,param2,param3,param4,param5,param6,param7,param8);
-    }
-    function setStarall6(
-      uint256 _tokenId,
-      uint param1,
-      uint param2,
-      string calldata param3,
-      uint param4,
-      string calldata param5,
-      uint param6,
-      uint param7,
-      uint param8,
-      uint param9)
-        external
-        onlyManager
-    {
-        all6[_tokenId] =  starall6(param1,param2,param3,param4,param5,param6,param7,param8,param9);
-    }
 
-    // function setDestoryTokenAddress(address _addr) external onlyManager {
-    //     destoryAddr = _addr;
-    // }
-
-    // function setConsumeNum(uint _num) external onlyManager {
-    //     consumeNum = _num;
-    // }
+    function setall(
+      uint256 _tokenId,
+        bool male,
+        uint meta,
+        string calldata  param1,
+        string calldata  param2,
+        string calldata  param3,
+        string calldata _uri) external onlyManager {
+       super._setTokenstarall(_tokenId,male,meta,param1,param2,param3,_uri);
+    }
 }
