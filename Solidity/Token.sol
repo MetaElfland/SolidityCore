@@ -313,7 +313,7 @@ contract Ownable is Context {
    * NOTE: Renouncing ownership will leave the contract without an owner,
    * thereby removing any functionality that is only available to the owner.
    */
-  function renounceOwnership() public onlyOwner {
+  function renounceOwnership() external onlyOwner {
     emit OwnershipTransferred(_owner, address(0));
     _owner = address(0);
   }
@@ -322,8 +322,9 @@ contract Ownable is Context {
    * @dev Transfers ownership of the contract to a new account (`newOwner`).
    * Can only be called by the current owner.
    */
-  function transferOwnership(address newOwner) public onlyOwner {
+  function transferOwnership(address newOwner) external onlyOwner {
     _transferOwnership(newOwner);
+    emit OwnershipTransferred(_owner, newOwner);
   }
 
   /**
@@ -462,7 +463,7 @@ contract MetaElfLand is Context, IBEP20, Ownable {
    *
    * - `spender` cannot be the zero address.
    */
-  function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
+  function increaseAllowance(address spender, uint256 addedValue) external returns (bool) {
     _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
     return true;
   }
@@ -481,31 +482,11 @@ contract MetaElfLand is Context, IBEP20, Ownable {
    * - `spender` must have allowance for the caller of at least
    * `subtractedValue`.
    */
-  function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
+  function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool) {
     _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "BEP20: decreased allowance below zero"));
     return true;
   }
 
-  /**
-   * @dev Creates `amount` tokens and assigns them to `msg.sender`, increasing
-   * the total supply.
-   *
-   * Requirements
-   *
-   * - `msg.sender` must be the token owner
-   */
-  function mint(uint256 amount) public onlyOwner returns (bool) {
-    _mint(_msgSender(), amount);
-    return true;
-  }
-
-  /**
-   * @dev Burn `amount` tokens and decreasing the total supply.
-   */
-  function burn(uint256 amount) public returns (bool) {
-    _burn(_msgSender(), amount);
-    return true;
-  }
 
   /**
    * @dev Moves tokens `amount` from `sender` to `recipient`.
@@ -530,42 +511,6 @@ contract MetaElfLand is Context, IBEP20, Ownable {
     emit Transfer(sender, recipient, amount);
   }
 
-  /** @dev Creates `amount` tokens and assigns them to `account`, increasing
-   * the total supply.
-   *
-   * Emits a {Transfer} event with `from` set to the zero address.
-   *
-   * Requirements
-   *
-   * - `to` cannot be the zero address.
-   */
-  function _mint(address account, uint256 amount) internal {
-    require(account != address(0), "BEP20: mint to the zero address");
-
-    _totalSupply = _totalSupply.add(amount);
-    _balances[account] = _balances[account].add(amount);
-    emit Transfer(address(0), account, amount);
-  }
-
-  /**
-   * @dev Destroys `amount` tokens from `account`, reducing the
-   * total supply.
-   *
-   * Emits a {Transfer} event with `to` set to the zero address.
-   *
-   * Requirements
-   *
-   * - `account` cannot be the zero address.
-   * - `account` must have at least `amount` tokens.
-   */
-  function _burn(address account, uint256 amount) internal {
-    require(account != address(0), "BEP20: burn from the zero address");
-
-    _balances[account] = _balances[account].sub(amount, "BEP20: burn amount exceeds balance");
-    _totalSupply = _totalSupply.sub(amount);
-    emit Transfer(account, address(0), amount);
-  }
-
   /**
    * @dev Sets `amount` as the allowance of `spender` over the `owner`s tokens.
    *
@@ -587,14 +532,4 @@ contract MetaElfLand is Context, IBEP20, Ownable {
     emit Approval(owner, spender, amount);
   }
 
-  /**
-   * @dev Destroys `amount` tokens from `account`.`amount` is then deducted
-   * from the caller's allowance.
-   *
-   * See {_burn} and {_approve}.
-   */
-  function _burnFrom(address account, uint256 amount) internal {
-    _burn(account, amount);
-    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "BEP20: burn amount exceeds allowance"));
-  }
 }
