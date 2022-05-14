@@ -605,6 +605,10 @@ contract Consignment is Governance {
     uint public constant _base = 10000;
     uint public itemNum = 0;
 
+    bool public buylock = true;
+    bool public selllock = true;
+    bool public cancellock = true;
+
     event SetFee(
         uint256 indexed _newFee
     );
@@ -617,8 +621,26 @@ contract Consignment is Governance {
          require(_nftaddr != address(0),"err");
         nftAddr = _nftaddr;
     }
+
+    modifier onlybuylock {
+        require(buylock, "lock");
+        buylock = false;
+        _;
+    }
+
+    modifier onlyselllock {
+        require(selllock, "lock");
+        selllock= false;
+        _;
+    }
+
+    modifier onlycancellock {
+        require(cancellock, "lock");
+        cancellock= false;
+        _;
+    }
     
-    function sell(uint _tokenid,uint _price) external {
+    function sell(uint _tokenid,uint _price) external onlyselllock {
         require(_nftSellerInfo[nftAddr][_tokenid] == address(0),"addr err");
         require(ERC721(nftAddr).ownerOf(_tokenid) == msg.sender,"ownerOf err");
         require(_nftTokenInfo[nftAddr][_tokenid] <= 0, "cancelSell");
@@ -637,9 +659,11 @@ contract Consignment is Governance {
         _itemInfos.push(itemIn);
         
         itemNum = itemNum.add(1);
+
+        selllock = true;
     }
     
-    function cancelSell(uint _tokenid) external {
+    function cancelSell(uint _tokenid) external onlycancellock {
         require(msg.sender == _governance || _nftSellerInfo[nftAddr][_tokenid] == msg.sender);
         require(_nftTokenInfo[nftAddr][_tokenid] > 0);
         
@@ -660,10 +684,10 @@ contract Consignment is Governance {
             _itemToID[_itemInfos[itemIndex].nftTokenAddr][_itemInfos[itemIndex].nftTokenID] = itemIndex;
         }
         
-        
+        cancellock = true;
     }
     
-    function buy(uint _tokenid) external {
+    function buy(uint _tokenid) external onlybuylock {
         uint nftprice = _nftTokenInfo[nftAddr][_tokenid];
         uint _before = IERC20(usdtToken).balanceOf(address(this));
         IERC20(usdtToken).safeTransferFrom(msg.sender, address(this),nftprice);
@@ -691,6 +715,8 @@ contract Consignment is Governance {
         {
             _itemToID[_itemInfos[itemIndex].nftTokenAddr][_itemInfos[itemIndex].nftTokenID] = itemIndex;
         }
+
+        buylock = true;
     }
     
 
